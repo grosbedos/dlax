@@ -1,0 +1,37 @@
+#!/bin/bash
+
+COMMAND=$1
+
+if [ -z "$COMMAND" ]; then
+   pkill -u "$(id -u)" -x xlunch 2>/dev/null
+   COMMAND=$(
+     xlunch --input /etc/xlunch/logout.dsv --noprompt --border auto --sideborder auto --columns 3 --rows 1 \
+            --backgroundcolor 00000066 \
+            --background /usr/share/wallpapers/slax_wallpaper.jpg --font DejaVuSans/11 \
+            --voidclickterminate --iconpadding 30 --textpadding 10 \
+            --leastmargin 10 --hidemissing --iconsize 128 \
+            --highlight /usr/share/icons/hicolor/128x128/apps/xlunch_highlight.png \
+            --outputonly
+)
+fi
+
+SND=/usr/share/sounds/shutdown.wav
+
+if [ "$COMMAND" != "" -a -r $SND ]; then
+   # blank desktop with smooth effect (if picom still running)
+   xlunch --noprompt --input /dev/null --bc 111111ff &
+   # play shutdown sound
+   aplay $SND
+fi
+
+if [ "$COMMAND" = "logout" ]; then
+   kill "$SLAX_DESKTOP_PID"
+fi
+
+if [ "$COMMAND" = "restart" ]; then
+   systemctl reboot
+fi
+
+if [ "$COMMAND" = "shutdown" ]; then
+   systemctl poweroff
+fi

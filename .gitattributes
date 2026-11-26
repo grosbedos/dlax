@@ -1,0 +1,9 @@
+# Scripts et configs lus sous Linux : toujours en LF, même depuis une copie Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.wav binary
+*.ttf binary
+*.xpm text eol=lf
+skel/.config/dconf/user binary
+*.xbm binary

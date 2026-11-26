@@ -1,0 +1,13 @@
+[begin] (Desktop menu)
+   [exec] (Terminal) { fbstartupnotify xterm -ls }
+   [exec] (File Manager) { fbstartupnotify pcmanfm }
+   [exec] (Web Browser) { fbstartupnotify firefox-esr }
+   [exec] (Text Editor) { fbstartupnotify scite }
+   [exec] (Calculator) { fbstartupnotify galculator }
+   [exec] (Network Manager) { fbstartupnotify connman-gtk }
+   [exec] (Run) { fbappselect }
+   [separator]
+   [workspaces] (Workspaces                ...)
+   [exec] (Exit / Logout) { fblogout }
+
+[end]

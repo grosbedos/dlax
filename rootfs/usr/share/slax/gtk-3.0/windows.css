@@ -1,0 +1,22 @@
+@import url("filechooser.css");
+
+/* Match Chromium's frames while preserving each application's content theme. */
+/* GtkWindow subclasses share .background even when their CSS node has another name. */
+.background.csd, .background.csd decoration { border-radius: 8px 8px 0 0; }
+.background.csd .titlebar { border-radius: 4px 4px 0 0; }
+.background headerbar, .background .titlebar { background-image: none; background-color: #d3e3fd; color: #333338; }
+.background:backdrop headerbar, .background:backdrop .titlebar { background-color: #dde3e9; }
+.background.csd decoration, .background.solid-csd decoration { border: 4px solid #d3e3fd; background-color: #d3e3fd; padding: 0; margin: 0; box-shadow: none; }
+.background.csd:backdrop decoration, .background.solid-csd:backdrop decoration { border-color: #dde3e9; background-color: #dde3e9; }
+.background.maximized decoration, .background.fullscreen decoration { border-width: 0; border-radius: 0; }
+.background.maximized, .background.fullscreen, .background.maximized .titlebar, .background.fullscreen .titlebar { border-radius: 0; }
+
+/* Leave the symbols bare until the pointer enters a window button. */
+.background .titlebar button.titlebutton { min-width: 16px; min-height: 16px; padding: 6px; border: 0; border-radius: 50%; background: transparent; box-shadow: none; color: #5f6368; }
+.background .titlebar button.titlebutton:backdrop { color: #adb1b7; }
+.background .titlebar button.titlebutton:hover { background: rgba(95, 99, 104, 0.12); }
+.background .titlebar button.titlebutton:active { background: rgba(95, 99, 104, 0.24); }
+
+/* Tooltips are rounded on all four corners, independently of normal window frames. */
+tooltip.background, tooltip.background.csd { border-radius: 8px; }
+tooltip.background decoration { border: 0; border-radius: 8px; background: transparent; box-shadow: none; }

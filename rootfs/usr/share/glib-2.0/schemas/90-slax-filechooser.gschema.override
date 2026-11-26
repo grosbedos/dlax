@@ -1,0 +1,7 @@
+[org.gtk.Settings.FileChooser]
+# GTK 3 only restores the size when both saved position coordinates are valid.
+window-position=(100, 50)
+window-size=(832, 576)
+
+[org.gtk.gtk4.Settings.FileChooser]
+window-size=(832, 576)

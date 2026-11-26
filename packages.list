@@ -1,0 +1,31 @@
+# Paquets Debian 13 (trixie) installés par steps/10-packages.sh
+# (--no-install-recommends). Repris de Slax/debian13/modules/03-desktop/build,
+# sans les outils de secours du live. Une ligne = un ou plusieurs paquets.
+
+# --- Serveur X ---
+xserver-xorg xserver-xorg-video-all xserver-xorg-input-libinput
+xinit x11-xserver-utils x11-utils xinput xdotool wmctrl
+libgl1-mesa-dri libglu1-mesa
+
+# --- Bureau Slax ---
+fluxbox picom xfce4-panel xfce4-docklike-plugin
+murrine-themes gtk2-engines-murrine librsvg2-common libglib2.0-bin
+desktop-file-utils adwaita-icon-theme fonts-dejavu-core fonts-wqy-microhei
+dbus-user-session at-spi2-core libnotify-bin
+
+# --- Applets de la barre ---
+connman connman-gtk wpasupplicant iw
+volumeicon-alsa alsa-utils
+cbatticon
+
+# --- Son (Firefox a besoin de PulseAudio/PipeWire) ---
+pipewire-pulse pipewire-alsa wireplumber
+
+# --- Applications ---
+xterm pcmanfm libfm-modules gvfs gvfs-backends udisks2
+xarchiver galculator scite feh scrot lxtask
+firefox-esr
+
+# --- Système ---
+sudo locales keyboard-configuration console-setup
+polkitd pkexec xdg-utils xdg-user-dirs

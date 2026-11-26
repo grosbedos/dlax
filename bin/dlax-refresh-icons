@@ -1,0 +1,81 @@
+#!/bin/sh
+# dlax : applique les réglages d'icônes de Slax (repris de Slax/debian13/modules/03-desktop/copy).
+# Lancé par install.sh (--force) puis après chaque opération dpkg (apt.conf.d/99dlax-icons) :
+# une mise à jour d'adwaita-icon-theme réécrit son index.theme, qu'il faut alors recompléter.
+#
+#   --force   tout refaire et régénérer tous les caches
+#   --quiet   ne rien afficher (mode hook apt)
+FORCE=
+QUIET=
+for ARG in "$@"; do
+   case "$ARG" in
+      --force) FORCE=1 ;;
+      --quiet) QUIET=1 ;;
+   esac
+done
+DATA=/usr/local/share/dlax
+ADWAITA=/usr/share/icons/Adwaita/index.theme
+CHANGED=
+
+say() { [ -n "$QUIET" ] || echo "dlax-refresh-icons: $*"; }
+
+# Tailles natives des icônes de barre et de dossiers ajoutées par Slax dans Adwaita.
+if [ -f "$ADWAITA" ]; then
+   while read -r CONTEXT NAME; do
+      for SIZE in 22 24 32 48; do
+         DIR=${SIZE}x${SIZE}/$CONTEXT
+         if ! grep -Fqx "[$DIR]" "$ADWAITA"; then
+            sed -i "s|^Directories=|Directories=$DIR,|" "$ADWAITA"
+            printf '\n[%s]\nContext=%s\nSize=%s\nType=Fixed\n' "$DIR" "$NAME" "$SIZE" >> "$ADWAITA"
+            CHANGED=1
+         fi
+      done
+   done <<'EOF'
+legacy Legacy
+places Places
+mimetypes MimeTypes
+EOF
+   if ! grep -Fqx '[64x64/mimetypes]' "$ADWAITA"; then
+      sed -i 's|^Directories=|Directories=64x64/mimetypes,|' "$ADWAITA"
+      printf '\n[64x64/mimetypes]\nContext=MimeTypes\nSize=64\nType=Fixed\n' >> "$ADWAITA"
+      CHANGED=1
+   fi
+fi
+
+if [ -z "$FORCE" ] && [ -z "$CHANGED" ]; then
+   exit 0
+fi
+
+# Les noms d'icônes standard (terminal, calculator...) pointent vers les dessins Slax.
+if [ -r "$DATA/icon-aliases" ]; then
+   while read -r NAME ICON; do
+      for SIZE in 16 22 24 32 48 64 96 128; do
+         SRC=/usr/share/icons/hicolor/${SIZE}x${SIZE}/apps/$ICON.png
+         DIR=/usr/local/share/icons/hicolor/${SIZE}x${SIZE}/apps
+         [ -f "$SRC" ] || continue
+         mkdir -p "$DIR"
+         cp "$SRC" "$DIR/$NAME.png"
+      done
+   done < "$DATA/icon-aliases"
+   cp /usr/share/icons/hicolor/index.theme /usr/local/share/icons/hicolor/
+   if [ -f /usr/share/icons/hicolor/128x128/apps/slax-xarchiver.png ]; then
+      cp /usr/share/icons/hicolor/128x128/apps/slax-xarchiver.png /usr/local/share/icons/hicolor/24x24/apps/xarchiver.png
+   fi
+fi
+
+# Un même dessin de curseur sert pour tous ses noms X11 et GTK.
+CURSORS=/usr/share/icons/Windows-Modern-Light/cursors
+if [ -r "$DATA/cursor-aliases" ] && [ -d "$CURSORS" ]; then
+   while read -r CURSOR ALIASES; do
+      for ALIAS in $ALIASES; do
+         ln -sf "$CURSOR" "$CURSORS/$ALIAS"
+      done
+   done < "$DATA/cursor-aliases"
+fi
+
+for THEME in /usr/share/icons/Adwaita /usr/share/icons/hicolor /usr/share/icons/SlaxBattery \
+             /usr/local/share/icons/hicolor; do
+   [ -f "$THEME/index.theme" ] && gtk-update-icon-cache -q -f "$THEME" 2>/dev/null
+done
+say "icônes mises à jour"
+exit 0

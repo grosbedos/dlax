@@ -1,0 +1,17 @@
+[user]
+showPreviews=true
+forceIconSize=true
+iconSize=32
+indicatorColor=rgb(138,180,248)
+inactiveColor=rgb(138,180,248)
+onlyDisplayVisible=true
+# Fit thumbnails within both logical-pixel limits, preserving their aspect ratio.
+previewMaxWidth=215
+previewMaxHeight=150
+previewSleep=250
+# Wait before showing the first preview when no popup is open (milliseconds).
+previewShowDelay=500
+# Wait before switching an open preview to another taskbar icon (milliseconds).
+previewSwitchDelay=250
+# Wait before the first window highlight; adjacent highlighted previews switch immediately.
+previewPeekDelay=250

@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# dlax fluxbox startup, derived from Slax's ~/.fluxbox/startup.
+# Removed: the Alt+Tab preview daemon, slax-status, VM guest integration, Chromium preloading.
+
+# Logout ends this window manager and lets xinit stop its own X server.
+SLAX_DESKTOP_PID=$$
+export SLAX_DESKTOP_PID
+
+# Apply an optional user keymap.
+if [ -f "$HOME/.Xmodmap" ]; then
+   xmodmap "$HOME/.Xmodmap"
+fi
+
+# merge xresource settings
+xrdb -merge "$HOME/.Xresources"
+
+# Restore the keyboard tray's saved layout and preferred alternate.
+fbkeyboard &
+KEYBOARDPID=$!
+
+# Set the background and use the cursor theme and size selected by Xresources.
+fbsetroot -solid '#010101'
+xsetroot -cursor_name left_ptr
+
+# disable screen blanking
+xset s off
+xset -dpms
+
+# Debian-local change: start fbautostart if it exists.
+if command -v fbautostart > /dev/null; then
+    fbautostart &
+fi
+
+# Restart failed desktop components while preserving clean exits and the X session lifetime.
+supervise_desktop()
+{
+   while true; do
+      if "$@"; then break; else DESKTOP_STATUS=$?; fi
+      if ! xdpyinfo >/dev/null 2>&1; then break; fi
+      printf '%s exited with status %s; restarting in 1 second.\n' "$1" "$DESKTOP_STATUS" >&2
+      sleep 1
+   done
+}
+supervise_desktop xfce4-panel --disable-wm-check --sm-client-disable &
+
+(
+   while [ "$(wmctrl -l | grep xfce4-panel)" = "" ]; do
+      sleep 0.1
+   done
+   supervise_desktop picom --config /etc/picom.conf &
+   volumeicon &
+   VOLUMEPID=$!
+   connman-gtk --tray &
+   NETWORKPID=$!
+
+   # Show one battery icon for a present system battery, excluding peripherals.
+   for SUPPLY in /sys/class/power_supply/*; do
+      if [ ! -r "$SUPPLY/type" ] || [ "$(cat "$SUPPLY/type")" != Battery ]; then continue; fi
+      if [ -r "$SUPPLY/scope" ] && [ "$(cat "$SUPPLY/scope")" = Device ]; then continue; fi
+      if [ -r "$SUPPLY/present" ] && [ "$(cat "$SUPPLY/present")" != 1 ]; then continue; fi
+      cbatticon -- "${SUPPLY##*/}" &
+      break
+   done
+
+   # Wait up to ten seconds for visible tray icons, skipping failed applets.
+   read -r UPTIME _ < /proc/uptime
+   DEADLINE=$(( ${UPTIME%%.*} + 10 ))
+   while true; do
+      MISSING=
+      for TRAY in "fbkeyboard:$KEYBOARDPID" "volumeicon:$VOLUMEPID" "connman-gtk:$NETWORKPID"; do
+         if kill -0 "${TRAY#*:}" 2>/dev/null && ! xdotool search --onlyvisible --classname "^${TRAY%:*}$" >/dev/null 2>&1; then
+            MISSING=1
+         fi
+      done
+      read -r UPTIME _ < /proc/uptime
+      if [ -z "$MISSING" ] || [ "${UPTIME%%.*}" -ge "$DEADLINE" ]; then
+         break
+      fi
+      sleep 0.1
+   done
+
+   # Icon desktop with the Slax wallpaper (set in pcmanfm's desktop profile).
+   pcmanfm --desktop &
+
+   SND=/usr/share/sounds/startup.wav
+   if [ -r "$SND" ]; then
+      aplay -q "$SND"
+   fi
+) &
+
+# And last but not least we start fluxbox.
+exec fluxbox
